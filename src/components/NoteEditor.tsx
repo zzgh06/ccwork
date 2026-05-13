@@ -8,7 +8,7 @@ interface NoteEditorProps {
 }
 
 export function NoteEditor({ selectedNoteId, isCreating, onDone }: NoteEditorProps) {
-  const { notes, addNote, editNote } = useNotes();
+  const { notes, createNote, updateNote } = useNotes();
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [saving, setSaving] = useState(false);
@@ -27,22 +27,18 @@ export function NoteEditor({ selectedNoteId, isCreating, onDone }: NoteEditorPro
   }, [selectedNoteId, isCreating]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSave = async () => {
-    if (!title.trim()) {
-      alert('제목을 입력해주세요');
-      return;
-    }
+    if (!title.trim()) return;
 
     setSaving(true);
     try {
       if (isCreating) {
-        await addNote(title, content);
+        await createNote(title, content);
       } else if (selectedNoteId) {
-        await editNote(selectedNoteId, { title, content });
+        await updateNote(selectedNoteId, { title, content });
       }
       onDone();
     } catch (e) {
       console.error(e);
-      alert('저장에 실패했습니다');
     } finally {
       setSaving(false);
     }
