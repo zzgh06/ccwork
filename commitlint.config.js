@@ -16,6 +16,7 @@ export default {
       'test', 'chore', 'design', 'comment', 'remove', 'rename'
     ]],
     'subject-max-length': [2, 'always', 50],
+    'subject-case': [0],
     'body-min-lines': [2, 'always'],
   }
 }
