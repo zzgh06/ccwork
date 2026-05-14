@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Notes App — 아키텍처 다이어그램</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #0d1117;
+      color: #e6edf3;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      min-height: 100vh;
+    }
+
+    header {
+      padding: 28px 40px 20px;
+      border-bottom: 1px solid #21262d;
+    }
+
+    header h1 {
+      font-size: 22px;
+      font-weight: 700;
+      color: #f0f6fc;
+      margin-bottom: 4px;
+    }
+
+    header .meta {
+      font-size: 12px;
+      color: #8b949e;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 4px;
+      padding: 20px 40px 0;
+      border-bottom: 1px solid #21262d;
+    }
+
+    .tab-btn {
+      background: none;
+      border: none;
+      color: #8b949e;
+      font-size: 14px;
+      font-weight: 500;
+      padding: 10px 18px;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      transition: color 0.15s, border-color 0.15s;
+    }
+
+    .tab-btn:hover { color: #e6edf3; }
+
+    .tab-btn.active {
+      color: #f0f6fc;
+      border-bottom-color: #388bfd;
+    }
+
+    .tab-panel {
+      display: none;
+      padding: 40px;
+    }
+
+    .tab-panel.active { display: block; }
+
+    .panel-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: #f0f6fc;
+      margin-bottom: 8px;
+    }
+
+    .panel-desc {
+      font-size: 13px;
+      color: #8b949e;
+      margin-bottom: 32px;
+      line-height: 1.6;
+    }
+
+    .diagram-wrap {
+      background: #161b22;
+      border: 1px solid #21262d;
+      border-radius: 12px;
+      padding: 40px 20px;
+      overflow-x: auto;
+      display: flex;
+      justify-content: center;
+    }
+
+    .diagram-wrap .mermaid {
+      min-width: 900px;
+      width: 100%;
+    }
+
+    .diagram-wrap .mermaid svg {
+      width: 100% !important;
+      height: auto !important;
+      min-height: 500px;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>📝 Notes App — 아키텍처 다이어그램</h1>
+  <div class="meta">
+    React 19 + TypeScript + Vite &nbsp;·&nbsp; json-server 백엔드 &nbsp;·&nbsp;
+    생성: <span id="ts"></span>
+  </div>
+</header>
+
+<nav class="tabs">
+  <button class="tab-btn active" data-tab="dep">컴포넌트 의존성</button>
+  <button class="tab-btn" data-tab="state">상태 흐름</button>
+  <button class="tab-btn" data-tab="data">데이터 흐름</button>
+</nav>
+
+<!-- 탭 1: 컴포넌트 의존성 -->
+<section class="tab-panel active" id="tab-dep">
+  <p class="panel-title">컴포넌트 의존성 그래프</p>
+  <p class="panel-desc">
+    파일 단위 import / 렌더 관계를 레이어별로 시각화합니다.<br>
+    실선(→) = import/렌더 관계 &nbsp;·&nbsp; 점선(-·->) = 타입만 참조
+  </p>
+  <div class="diagram-wrap">
+    <div class="mermaid">
+graph TD
+  subgraph 진입점
+    main["main.tsx\n앱 진입점"]
+  end
+
+  subgraph 컴포넌트
+    App["App.tsx\n선택 상태 소유"]
+    Layout["Layout.tsx\n헤더+사이드바+메인 슬롯"]
+    NoteList["NoteList.tsx\n노트 목록 사이드바"]
+    NoteItem["NoteItem.tsx\n노트 카드 단위"]
+    NoteEditor["NoteEditor.tsx\n생성+편집 폼"]
+  end
+
+  subgraph Context
+    NotesCtx["NotesContext.tsx\n전역 상태 + useNotes 훅"]
+  end
+
+  subgraph API레이어
+    NotesApi["api/notes.ts\nfetch/create/update/delete"]
+  end
+
+  subgraph 타입
+    NoteType["types/note.ts\nNote 인터페이스"]
+  end
+
+  subgraph 백엔드
+    JSONServer["JSON Server\nlocalhost:3001"]
+  end
+
+  main --> App
+  App --> NotesCtx
+  App --> Layout
+  App --> NoteList
+  App --> NoteEditor
+  NoteList --> NotesCtx
+  NoteList --> NoteItem
+  NoteEditor --> NotesCtx
+  NoteItem -.-> NoteType
+  NotesCtx --> NotesApi
+  NotesCtx -.-> NoteType
+  NotesApi -.-> NoteType
+  NotesApi --> JSONServer
+    </div>
+  </div>
+</section>
+
+<!-- 탭 2: 상태 흐름 -->
+<section class="tab-panel" id="tab-state">
+  <p class="panel-title">상태 흐름</p>
+  <p class="panel-desc">
+    상태가 어느 레이어에 위치하는지, props·callback·context로 어떻게 흐르는지 나타냅니다.
+  </p>
+  <div class="diagram-wrap">
+    <div class="mermaid">
+flowchart LR
+  subgraph CTX["NotesContext - 서버 데이터"]
+    CTX_data["notes / loading / error"]
+    CTX_fn["createNote / updateNote / deleteNote"]
+  end
+
+  subgraph APP["App.tsx - UI 선택 상태"]
+    APP_state["selectedNoteId / isCreating"]
+  end
+
+  subgraph EDITOR["NoteEditor - 폼 로컬 상태"]
+    ED_state["title / content / saving"]
+  end
+
+  NoteList["NoteList"]
+  NoteItem["NoteItem"]
+  Layout["Layout"]
+
+  CTX_data -->|notes, loading, error| NoteList
+  CTX_fn -->|deleteNote| NoteList
+  CTX_data -->|notes| ED_state
+  CTX_fn -->|createNote, updateNote| ED_state
+  APP_state -->|selectedNoteId, onSelect| NoteList
+  APP_state -->|selectedNoteId, isCreating, onDone| ED_state
+  APP_state -->|onNewNote| Layout
+  NoteList -->|onSelect 콜백| APP_state
+  NoteList --> NoteItem
+  NoteItem -->|onSelect, onDelete| NoteList
+  ED_state -->|onDone 콜백| APP_state
+    </div>
+  </div>
+</section>
+
+<!-- 탭 3: 데이터 흐름 -->
+<section class="tab-panel" id="tab-data">
+  <p class="panel-title">데이터 흐름 — CRUD 시퀀스</p>
+  <p class="panel-desc">
+    읽기·생성·수정·삭제 한 사이클을 순서도로 표현합니다.
+  </p>
+  <div class="diagram-wrap">
+    <div class="mermaid">
+sequenceDiagram
+  actor 사용자
+  participant 컴포넌트 as NoteList / NoteEditor
+  participant 컨텍스트 as NotesContext
+  participant API as api/notes.ts
+  participant 서버 as JSON Server
+
+  Note over 컨텍스트,서버: 읽기 — 마운트 시 자동 실행
+  컨텍스트->>API: fetchNotes()
+  API->>서버: GET /notes
+  서버-->>API: Note[]
+  API-->>컨텍스트: Note[]
+  컨텍스트-->>컴포넌트: notes / loading / error
+
+  Note over 사용자,서버: 생성
+  사용자->>컴포넌트: 새 노트 저장
+  컴포넌트->>컨텍스트: createNote(title, content)
+  컨텍스트->>API: createNote(title, content)
+  API->>서버: POST /notes
+  서버-->>API: Note
+  API-->>컨텍스트: Note
+  컨텍스트-->>컴포넌트: notes 갱신
+
+  Note over 사용자,서버: 수정
+  사용자->>컴포넌트: 노트 편집 저장
+  컴포넌트->>컨텍스트: updateNote(id, updates)
+  컨텍스트->>API: updateNote(id, updates)
+  API->>서버: PATCH /notes/:id
+  서버-->>API: Note
+  API-->>컨텍스트: Note
+  컨텍스트-->>컴포넌트: notes 갱신
+
+  Note over 사용자,서버: 삭제
+  사용자->>컴포넌트: 삭제 버튼 클릭
+  컴포넌트->>컨텍스트: deleteNote(id)
+  컨텍스트->>API: deleteNote(id)
+  API->>서버: DELETE /notes/:id
+  서버-->>API: 204 No Content
+  API-->>컨텍스트: 완료
+  컨텍스트-->>컴포넌트: notes 갱신
+    </div>
+  </div>
+</section>
+
+<script>
+  document.getElementById('ts').textContent = new Date().toLocaleString('ko-KR');
+
+  mermaid.initialize({
+    startOnLoad: false,
+    theme: 'dark',
+    themeVariables: {
+      background: '#161b22',
+      primaryColor: '#1f6feb',
+      primaryTextColor: '#e6edf3',
+      primaryBorderColor: '#388bfd',
+      lineColor: '#8b949e',
+      secondaryColor: '#21262d',
+      tertiaryColor: '#161b22',
+      noteBkgColor: '#21262d',
+      noteTextColor: '#e6edf3',
+      activationBkgColor: '#1f6feb',
+    },
+    flowchart: { curve: 'basis', htmlLabels: true },
+    sequence: { actorMargin: 60, messageMargin: 30 },
+  });
+
+  const rendered = new Set();
+
+  function renderPanel(tabId) {
+    if (rendered.has(tabId)) return;
+    rendered.add(tabId);
+    const panel = document.getElementById('tab-' + tabId);
+    mermaid.run({ nodes: Array.from(panel.querySelectorAll('.mermaid')) });
+  }
+
+  // 첫 번째 탭 즉시 렌더링
+  renderPanel('dep');
+
+  document.querySelectorAll('.tab-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const target = btn.dataset.tab;
+      document.querySelectorAll('.tab-btn').forEach((b) => b.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach((p) => p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('tab-' + target).classList.add('active');
+      renderPanel(target);
+    });
+  });
+</script>
+
+</body>
+</html>
