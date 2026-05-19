@@ -137,6 +137,29 @@ feat: 로그인 기능 추가
 - 로그인 폼 유효성 검사 추가
 ```
 
+## 디자인 시스템
+
+스타일 관련 작업(컴포넌트 className 수정, CSS 편집, UI 구현 등)에는 반드시 `design-system` 스킬을 먼저 호출하여 규칙을 로드한 뒤 진행한다.
+
+상세 스펙: `docs/design-system/`
+
+### 핵심 규칙 (항상 적용)
+
+- **border로 영역 분리 금지** — 배경색 전환으로만 구분한다
+- **텍스트에 `#000000` / `text-black` 금지** — `#2b3437` (on_surface) 사용
+- **`bg-white` 등 Tailwind 기본 색상 클래스 금지** — 디자인 토큰 색상값 사용
+- **`#0053dc` (tertiary)는 CTA에만** — 장식 목적 사용 금지
+- **기본 box-shadow 금지** — Ambient Shadow(blur 24~40px, opacity 6%) 또는 Tonal Layering 사용
+
+### 참조 파일
+
+| 파일                                | 참조 시점                 |
+| ----------------------------------- | ------------------------- |
+| `@docs/design-system/tokens.md`     | 색상·간격 토큰 확인       |
+| `@docs/design-system/typography.md` | 텍스트·폰트 스타일링      |
+| `@docs/design-system/components.md` | 버튼·카드·Input·Chip 패턴 |
+| `@docs/design-system/rules.md`      | Do/Don't 전체 검수        |
+
 ## 기술 스택
 
 - **스타일**: Tailwind CSS v4 (`@tailwindcss/vite` 플러그인, CSS 변수 기반 테마)
