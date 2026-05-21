@@ -57,4 +57,22 @@ describe('TagInput', () => {
     fireEvent.keyDown(input, { key: 'Enter' });
     expect(mockOnAdd).not.toHaveBeenCalled();
   });
+
+  // [정상] should reflect new tags when tags prop is updated externally
+  it('tags prop이 외부에서 변경될 때 새 태그 목록을 즉시 반영한다', () => {
+    const { rerender } = render(
+      <TagInput tags={['react']} onAdd={mockOnAdd} onRemove={mockOnRemove} />,
+    );
+    rerender(<TagInput tags={['react', 'typescript']} onAdd={mockOnAdd} onRemove={mockOnRemove} />);
+    expect(screen.getByText('typescript')).toBeInTheDocument();
+  });
+
+  // [경계] should render no chips when tags prop changes to empty array
+  it('tags prop이 빈 배열로 변경될 때 칩이 모두 사라진다', () => {
+    const { rerender } = render(
+      <TagInput tags={['react']} onAdd={mockOnAdd} onRemove={mockOnRemove} />,
+    );
+    rerender(<TagInput tags={[]} onAdd={mockOnAdd} onRemove={mockOnRemove} />);
+    expect(screen.queryByRole('listitem')).not.toBeInTheDocument();
+  });
 });

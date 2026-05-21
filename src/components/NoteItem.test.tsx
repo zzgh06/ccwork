@@ -65,5 +65,15 @@ describe('NoteItem', () => {
       rerender(<NoteItem note={makeNote({ tags: ['react', 'typescript'] })} {...defaultProps} />);
       expect(screen.getByText('typescript')).toBeInTheDocument();
     });
+
+    // [정상] should display tags from updated note when note prop is re-received after save
+    it('저장 후 업데이트된 note prop을 받으면 변경된 태그를 표시한다', () => {
+      const { rerender } = render(
+        <NoteItem note={makeNote({ tags: ['react'] })} {...defaultProps} />,
+      );
+      rerender(<NoteItem note={makeNote({ tags: ['typescript'] })} {...defaultProps} />);
+      expect(screen.getByText('typescript')).toBeInTheDocument();
+      expect(screen.queryByText('react')).not.toBeInTheDocument();
+    });
   });
 });

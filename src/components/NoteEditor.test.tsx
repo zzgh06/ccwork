@@ -189,4 +189,52 @@ describe('handleSave', () => {
       );
     });
   });
+
+  // [정상] should call updateNote with newly added tag when tag is added then saved
+  it('태그 추가 후 저장 시 추가된 태그를 포함해 updateNote를 호출한다', async () => {
+    const note = makeNote({ id: '1', tags: [] });
+    setupMock([note]);
+    render(<NoteEditor selectedNoteId="1" isCreating={false} onDone={vi.fn()} />);
+    const tagInput = screen.getByPlaceholderText(/태그/);
+    fireEvent.change(tagInput, { target: { value: 'react' } });
+    fireEvent.keyDown(tagInput, { key: 'Enter' });
+    fireEvent.click(screen.getByRole('button', { name: '저장' }));
+    await waitFor(() => {
+      expect(mockUpdateNote).toHaveBeenCalledWith(
+        '1',
+        expect.objectContaining({ tags: ['react'] }),
+      );
+    });
+  });
+
+  // [정상] should call updateNote without removed tag when tag is removed then saved
+  it('태그 삭제 후 저장 시 삭제된 태그 없이 updateNote를 호출한다', async () => {
+    const note = makeNote({ id: '1', tags: ['react', 'study'] });
+    setupMock([note]);
+    render(<NoteEditor selectedNoteId="1" isCreating={false} onDone={vi.fn()} />);
+    const reactChip = screen.getByText('react');
+    const removeBtn = reactChip.parentElement!.querySelector('button')!;
+    fireEvent.click(removeBtn);
+    fireEvent.click(screen.getByRole('button', { name: '저장' }));
+    await waitFor(() => {
+      expect(mockUpdateNote).toHaveBeenCalledWith(
+        '1',
+        expect.objectContaining({ tags: ['study'] }),
+      );
+    });
+  });
+
+  // [정상] should call updateNote including title, content, and tags together
+  it('저장 시 title·content·tags를 모두 포함해 updateNote를 호출한다', async () => {
+    const note = makeNote({ id: '1', title: '테스트 노트', content: '내용', tags: ['react'] });
+    setupMock([note]);
+    render(<NoteEditor selectedNoteId="1" isCreating={false} onDone={vi.fn()} />);
+    fireEvent.click(screen.getByRole('button', { name: '저장' }));
+    await waitFor(() => {
+      expect(mockUpdateNote).toHaveBeenCalledWith(
+        '1',
+        expect.objectContaining({ title: '테스트 노트', content: '내용', tags: ['react'] }),
+      );
+    });
+  });
 });
