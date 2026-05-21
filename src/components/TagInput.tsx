@@ -11,6 +11,7 @@ export function TagInput({ tags, onAdd, onRemove }: TagInputProps) {
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key !== 'Enter') return;
+    if (e.nativeEvent.isComposing) return;
     const trimmed = inputValue.trim();
     if (!trimmed) return;
     onAdd(trimmed);
