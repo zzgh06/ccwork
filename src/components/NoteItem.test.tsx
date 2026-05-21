@@ -55,4 +55,15 @@ describe('NoteItem', () => {
       expect(screen.queryByRole('list')).not.toBeInTheDocument();
     });
   });
+
+  describe('저장 후 태그 반영', () => {
+    // [정상] NoteItem — should display updated tags after save
+    it('저장 후 변경된 tags를 카드에 반영한다', () => {
+      const { rerender } = render(
+        <NoteItem note={makeNote({ tags: ['react'] })} {...defaultProps} />,
+      );
+      rerender(<NoteItem note={makeNote({ tags: ['react', 'typescript'] })} {...defaultProps} />);
+      expect(screen.getByText('typescript')).toBeInTheDocument();
+    });
+  });
 });
