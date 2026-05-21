@@ -11,10 +11,8 @@ export function NoteItem({ note, isSelected, onSelect, onDelete }: NoteItemProps
   return (
     <div
       onClick={() => onSelect(note.id)}
-      className={`bg-card rounded-2xl p-4 border cursor-pointer transition-all ${
-        isSelected
-          ? 'border-foreground shadow-[0_2px_12px_rgba(0,0,0,0.12)]'
-          : 'border-border hover:shadow-[0_2px_8px_rgba(0,0,0,0.07)]'
+      className={`rounded-2xl p-4 cursor-pointer transition-all ${
+        isSelected ? 'bg-[#dbe4e7]' : 'bg-card hover:bg-[#f1f4f6]'
       }`}
     >
       <div className="flex items-start justify-between gap-2">
@@ -34,6 +32,15 @@ export function NoteItem({ note, isSelected, onSelect, onDelete }: NoteItemProps
       <p className="text-xs text-muted-foreground mt-1.5 line-clamp-2 leading-relaxed">
         {note.content || '(내용 없음)'}
       </p>
+      {note.tags && note.tags.length > 0 && (
+        <ul className="flex flex-wrap gap-1 mt-2">
+          {note.tags.map((tag) => (
+            <li key={tag} className="text-xs px-2 py-0.5 rounded-full bg-[#dbe4e7] text-[#586064]">
+              {tag}
+            </li>
+          ))}
+        </ul>
+      )}
       <p className="text-[10px] text-muted-foreground/70 mt-2">
         {new Date(note.updatedAt).toLocaleDateString('ko-KR')}
       </p>
