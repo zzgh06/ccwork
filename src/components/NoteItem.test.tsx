@@ -139,6 +139,27 @@ describe('NoteItem', () => {
       expect(screen.getByText('study')).toBeInTheDocument();
       expect(screen.getAllByRole('listitem')).toHaveLength(2);
     });
+
+    // ac-verifier 갭 보완 — 탭·줄바꿈만인 태그도 칩 미렌더링
+    it('탭 문자만인 태그는 칩을 렌더링하지 않는다', () => {
+      const note = makeNote({ tags: ['\t'] });
+      render(<NoteItem note={note} {...defaultProps} />);
+      expect(screen.queryByRole('listitem')).not.toBeInTheDocument();
+    });
+
+    it('줄바꿈 문자만인 태그는 칩을 렌더링하지 않는다', () => {
+      const note = makeNote({ tags: ['\n'] });
+      render(<NoteItem note={note} {...defaultProps} />);
+      expect(screen.queryByRole('listitem')).not.toBeInTheDocument();
+    });
+
+    // ac-verifier 갭 보완 — filter(#10) + dedup(#9) 동시 적용
+    it('빈 태그와 중복 유효 태그가 혼재하면 유효 태그 칩 1개만 렌더링한다', () => {
+      const note = makeNote({ tags: ['react', '', 'react', ' '] });
+      render(<NoteItem note={note} {...defaultProps} />);
+      expect(screen.getAllByRole('listitem')).toHaveLength(1);
+      expect(screen.getByText('react')).toBeInTheDocument();
+    });
   });
 
   describe('저장 후 태그 반영', () => {
