@@ -173,6 +173,80 @@ describe('NoteEditor 초기화', () => {
 });
 
 // ──────────────────────────────────────────
+// handleSave — 생성 모드 (Issue #7)
+// ──────────────────────────────────────────
+describe('handleSave — 생성 모드', () => {
+  // [정상] should render TagInput when isCreating is true
+  it('생성 모드에서 TagInput을 렌더링한다', () => {
+    setupMock([]);
+    render(<NoteEditor selectedNoteId={null} isCreating={true} onDone={vi.fn()} />);
+    expect(screen.getByPlaceholderText('태그 입력')).toBeInTheDocument();
+  });
+
+  // [정상] should call createNote(title, content, tags) when saving in create mode with tags
+  it('태그를 입력 후 저장 시 createNote(title, content, tags)를 호출한다', async () => {
+    setupMock([]);
+    render(<NoteEditor selectedNoteId={null} isCreating={true} onDone={vi.fn()} />);
+    fireEvent.change(screen.getByPlaceholderText('제목'), { target: { value: '새 노트' } });
+    const tagInput = screen.getByPlaceholderText('태그 입력');
+    fireEvent.change(tagInput, { target: { value: 'react' } });
+    fireEvent.keyDown(tagInput, { key: 'Enter' });
+    fireEvent.click(screen.getByRole('button', { name: '저장' }));
+    await waitFor(() => {
+      expect(mockCreateNote).toHaveBeenCalledWith('새 노트', '', ['react']);
+    });
+  });
+
+  // [정상] should call createNote with title, content, and tags together in create mode
+  it('생성 모드 저장 시 title·content·tags를 모두 포함해 createNote를 호출한다', async () => {
+    setupMock([]);
+    render(<NoteEditor selectedNoteId={null} isCreating={true} onDone={vi.fn()} />);
+    fireEvent.change(screen.getByPlaceholderText('제목'), { target: { value: '제목' } });
+    fireEvent.change(screen.getByPlaceholderText('내용을 입력하세요...'), {
+      target: { value: '내용' },
+    });
+    const tagInput = screen.getByPlaceholderText('태그 입력');
+    fireEvent.change(tagInput, { target: { value: 'react' } });
+    fireEvent.keyDown(tagInput, { key: 'Enter' });
+    fireEvent.click(screen.getByRole('button', { name: '저장' }));
+    await waitFor(() => {
+      expect(mockCreateNote).toHaveBeenCalledWith('제목', '내용', ['react']);
+    });
+  });
+
+  // [경계] should call createNote with empty array when saving in create mode with no tags added
+  it('태그 없이 저장 시 createNote를 빈 태그 배열로 호출한다', async () => {
+    setupMock([]);
+    render(<NoteEditor selectedNoteId={null} isCreating={true} onDone={vi.fn()} />);
+    fireEvent.change(screen.getByPlaceholderText('제목'), { target: { value: '새 노트' } });
+    fireEvent.click(screen.getByRole('button', { name: '저장' }));
+    await waitFor(() => {
+      expect(mockCreateNote).toHaveBeenCalledWith('새 노트', '', []);
+    });
+  });
+
+  // [경계] should not call createNote when title is empty in create mode
+  it('제목이 비어있으면 createNote를 호출하지 않는다', () => {
+    setupMock([]);
+    render(<NoteEditor selectedNoteId={null} isCreating={true} onDone={vi.fn()} />);
+    fireEvent.click(screen.getByRole('button', { name: '저장' }));
+    expect(mockCreateNote).not.toHaveBeenCalled();
+  });
+
+  // [예외] should not call updateNote when isCreating is true
+  it('생성 모드에서 저장 시 updateNote를 호출하지 않는다', async () => {
+    setupMock([]);
+    render(<NoteEditor selectedNoteId={null} isCreating={true} onDone={vi.fn()} />);
+    fireEvent.change(screen.getByPlaceholderText('제목'), { target: { value: '새 노트' } });
+    fireEvent.click(screen.getByRole('button', { name: '저장' }));
+    await waitFor(() => {
+      expect(mockCreateNote).toHaveBeenCalled();
+    });
+    expect(mockUpdateNote).not.toHaveBeenCalled();
+  });
+});
+
+// ──────────────────────────────────────────
 // handleSave
 // ──────────────────────────────────────────
 describe('handleSave', () => {
