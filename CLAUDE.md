@@ -115,6 +115,28 @@ App (selectedNoteId, isCreating 상태 소유)
 1. **에러 메시지 언어 불일치**: API 에러는 영어(`'Failed to fetch notes'`), 컴포넌트 `console.error`는 해당 에러 객체를 그대로 출력
 2. **eslint-disable 억제**: `NoteEditor.tsx:27`의 `useEffect` deps 배열에 `selectedNote`가 누락된 채 `eslint-disable-line`으로 경고를 억제 중 — 노트 전환 시 폼이 동기화되지 않을 수 있는 잠재적 버그
 
+## TDD 이슈 사이클 워크플로우
+
+새 이슈 작업 시 반드시 아래 순서를 따른다. **각 단계는 인간 승인 게이트가 있으므로 자동으로 다음 단계로 넘어가지 말 것.**
+
+| #   | 명령                                                             | 역할                                      | 도구   |
+| --- | ---------------------------------------------------------------- | ----------------------------------------- | ------ |
+| 1   | `/test-scenarios N`                                              | 시그니처 확정 + 시나리오 도출             | skill  |
+| 2   | `/tdd-red N`                                                     | 실패 테스트 작성                          | skill  |
+| 3   | `/tdd-green N`                                                   | 최소 구현, 전체 테스트 통과               | skill  |
+| 4   | `@ac-verifier N`                                                 | AC 충족 독립 검증 (테스트 통과 ≠ AC 충족) | agent  |
+| 5   | `/tdd-refactor N`                                                | 구조 개선 (깨지면 즉시 롤백)              | skill  |
+| 6   | `/security-review N`                                             | 타입·보안 점검                            | skill  |
+| 7   | commit → PR `--base feature/<spec>` → squash merge → 이슈 클로즈 | —                                         | git/gh |
+
+### 흐름 제어 규칙
+
+- **Claude는 각 단계 완료 후 다음 단계를 제안만 한다** — 사용자가 명시적으로 진행을 요청할 때까지 기다린다.
+- 단계 완료 시 제안 형식: `"✓ [단계명] 완료. 다음: /tdd-red N 을 실행할까요?"`
+- 이슈 의존성이 있으면 선행 이슈가 머지된 feature 브랜치에서 분기한다.
+- ac-verifier가 AC 미충족을 보고하면 `/tdd-green N`으로 돌아간다.
+- `/security-review` 에서 CRITICAL 또는 HIGH 항목이 나오면 커밋 전 반드시 수정한다.
+
 ## 커밋 규칙
 
 `commitlint` + husky `commit-msg` 훅으로 커밋 메시지 형식을 강제한다. 설정 파일: `commitlint.config.js`
