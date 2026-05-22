@@ -34,7 +34,7 @@ export function NoteItem({ note, isSelected, onSelect, onDelete }: NoteItemProps
       </p>
       {note.tags && note.tags.length > 0 && (
         <ul className="flex flex-wrap gap-1 mt-2">
-          {note.tags.map((tag) => (
+          {[...new Set(note.tags)].map((tag) => (
             <li key={tag} className="text-xs px-2 py-0.5 rounded-full bg-[#dbe4e7] text-[#586064]">
               {tag}
             </li>

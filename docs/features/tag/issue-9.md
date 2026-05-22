@@ -28,16 +28,16 @@
 
 ### 정상
 
-- [정상] NoteItem — should render only unique chips when tags contain exact duplicates
+- [x] [정상] NoteItem — should render only unique chips when tags contain exact duplicates
 
 ### 경계
 
-- [경계] NoteItem — should render 1 chip when tags is ["react", "react"]
-- [경계] NoteItem — should render 2 chips when tags is ["react", "React"] (Set은 case-sensitive)
+- [x] [경계] NoteItem — should render 1 chip when tags is ["react", "react"]
+- [x] [경계] NoteItem — should render 2 chips when tags is ["react", "React"] (Set은 case-sensitive)
 
 ### 예외
 
-- [예외] NoteItem — should not emit React key warning when tags contain duplicates
+- [x] [예외] NoteItem — should not emit React key warning when tags contain duplicates
 
 ## AC 커버리지
 
