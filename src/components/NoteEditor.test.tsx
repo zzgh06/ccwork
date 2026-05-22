@@ -273,6 +273,17 @@ describe('handleAddTag — 유효성 검사', () => {
       expect(screen.queryByRole('listitem')).not.toBeInTheDocument();
     });
 
+    // [경계] should not add tag when tag with surrounding spaces trims to 21 characters
+    it('앞뒤 공백 포함해도 trim 후 21자인 태그는 추가되지 않는다', () => {
+      const note = makeNote({ id: '1', tags: [] });
+      setupMock([note]);
+      render(<NoteEditor selectedNoteId="1" isCreating={false} onDone={vi.fn()} />);
+      const tagInput = screen.getByPlaceholderText('태그 입력');
+      fireEvent.change(tagInput, { target: { value: ' ' + 'a'.repeat(21) + ' ' } });
+      fireEvent.keyDown(tagInput, { key: 'Enter' });
+      expect(screen.queryByRole('listitem')).not.toBeInTheDocument();
+    });
+
     // [경계] should add tag when tag with surrounding spaces trims to exactly 20 characters
     it('앞뒤 공백 포함해도 trim 후 20자인 태그는 정상 추가된다', () => {
       const note = makeNote({ id: '1', tags: [] });
