@@ -53,20 +53,20 @@ await createNote(title, content, tags);
 
 ### 정상
 
-- [정상] NoteEditor — should render TagInput when isCreating is true
-- [정상] NoteEditor(handleSave) — should call createNote(title, content, tags) when saving in create mode with tags
-- [정상] NoteEditor(handleSave) — should call createNote with title, content, and tags together in create mode
-- [정상] NotesContext(createNote) — should add note including provided tags to notes state after createNote is called
+- [x] [정상] NoteEditor — should render TagInput when isCreating is true
+- [x] [정상] NoteEditor(handleSave) — should call createNote(title, content, tags) when saving in create mode with tags
+- [x] [정상] NoteEditor(handleSave) — should call createNote with title, content, and tags together in create mode
+- [x] [정상] NotesContext(createNote) — should add note including provided tags to notes state after createNote is called
 
 ### 경계
 
-- [경계] NoteEditor(handleSave) — should call createNote with empty array when saving in create mode with no tags added
-- [경계] NoteEditor(handleSave) — should not call createNote when title is empty in create mode
+- [x] [경계] NoteEditor(handleSave) — should call createNote with empty array when saving in create mode with no tags added
+- [x] [경계] NoteEditor(handleSave) — should not call createNote when title is empty in create mode
 
 ### 예외
 
-- [예외] NoteEditor(handleSave) — should not call updateNote when isCreating is true
-- [예외] NotesContext(createNote) — should not hardcode tags to [] when tags argument is provided
+- [x] [예외] NoteEditor(handleSave) — should not call updateNote when isCreating is true
+- [x] [예외] NotesContext(createNote) — should not hardcode tags to [] when tags argument is provided
 
 ## AC 커버리지
 
