@@ -31,6 +31,8 @@ export function NoteEditor({ selectedNoteId, isCreating, onDone }: NoteEditorPro
   }, [selectedNoteId, isCreating]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleAddTag = (tag: string) => {
+    if (tag.length > 20) return;
+    if (tags.some((t) => t.toLowerCase() === tag.toLowerCase())) return;
     setTags((prev) => [...prev, tag]);
   };
 

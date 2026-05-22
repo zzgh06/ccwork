@@ -30,20 +30,20 @@
 
 ### 정상
 
-- [정상] NoteEditor(handleAddTag) — should add tag when tag is exactly 20 characters
-- [정상] NoteEditor(handleAddTag) — should add tag when existing tags contain similar value with different case
+- [x] [정상] NoteEditor(handleAddTag) — should add tag when tag is exactly 20 characters
+- [x] [정상] NoteEditor(handleAddTag) — should add tag when existing tags contain similar value with different case
 
 ### 경계
 
-- [경계] NoteEditor(handleAddTag) — should not add tag when tag is 21 characters after trim
-- [경계] NoteEditor(handleAddTag) — should add tag when tag with surrounding spaces trims to exactly 20 characters
+- [x] [경계] NoteEditor(handleAddTag) — should not add tag when tag is 21 characters after trim
+- [x] [경계] NoteEditor(handleAddTag) — should add tag when tag with surrounding spaces trims to exactly 20 characters
 
 ### 예외
 
-- [예외] NoteEditor(handleAddTag) — should not add tag when exact same tag already exists
-- [예외] NoteEditor(handleAddTag) — should not add tag when same tag exists with different case (e.g. "TypeScript" vs "typescript")
-- [예외] NoteEditor(handleAddTag) — should not display error message when duplicate tag is entered
-- [예외] NoteEditor(handleAddTag) — should not display error message when tag exceeds 20 characters
+- [x] [예외] NoteEditor(handleAddTag) — should not add tag when exact same tag already exists
+- [x] [예외] NoteEditor(handleAddTag) — should not add tag when same tag exists with different case (e.g. "TypeScript" vs "typescript")
+- [x] [예외] NoteEditor(handleAddTag) — should not display error message when duplicate tag is entered
+- [x] [예외] NoteEditor(handleAddTag) — should not display error message when tag exceeds 20 characters
 
 ## AC 커버리지
 
