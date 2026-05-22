@@ -247,6 +247,103 @@ describe('handleSave — 생성 모드', () => {
 });
 
 // ──────────────────────────────────────────
+// handleAddTag — 유효성 검사 (Issue #8)
+// ──────────────────────────────────────────
+describe('handleAddTag — 유효성 검사', () => {
+  describe('길이 제한', () => {
+    // [정상] should add tag when tag is exactly 20 characters
+    it('정확히 20자인 태그는 정상 추가된다', () => {
+      const note = makeNote({ id: '1', tags: [] });
+      setupMock([note]);
+      render(<NoteEditor selectedNoteId="1" isCreating={false} onDone={vi.fn()} />);
+      const tagInput = screen.getByPlaceholderText('태그 입력');
+      fireEvent.change(tagInput, { target: { value: 'a'.repeat(20) } });
+      fireEvent.keyDown(tagInput, { key: 'Enter' });
+      expect(screen.getByText('a'.repeat(20))).toBeInTheDocument();
+    });
+
+    // [경계] should not add tag when tag is 21 characters after trim
+    it('trim 후 21자인 태그는 추가되지 않는다', () => {
+      const note = makeNote({ id: '1', tags: [] });
+      setupMock([note]);
+      render(<NoteEditor selectedNoteId="1" isCreating={false} onDone={vi.fn()} />);
+      const tagInput = screen.getByPlaceholderText('태그 입력');
+      fireEvent.change(tagInput, { target: { value: 'a'.repeat(21) } });
+      fireEvent.keyDown(tagInput, { key: 'Enter' });
+      expect(screen.queryByRole('listitem')).not.toBeInTheDocument();
+    });
+
+    // [경계] should add tag when tag with surrounding spaces trims to exactly 20 characters
+    it('앞뒤 공백 포함해도 trim 후 20자인 태그는 정상 추가된다', () => {
+      const note = makeNote({ id: '1', tags: [] });
+      setupMock([note]);
+      render(<NoteEditor selectedNoteId="1" isCreating={false} onDone={vi.fn()} />);
+      const tagInput = screen.getByPlaceholderText('태그 입력');
+      fireEvent.change(tagInput, { target: { value: ' ' + 'a'.repeat(20) + ' ' } });
+      fireEvent.keyDown(tagInput, { key: 'Enter' });
+      expect(screen.getByText('a'.repeat(20))).toBeInTheDocument();
+    });
+
+    // [예외] should not display error message when tag exceeds 20 characters
+    it('21자 태그 입력 시 에러 메시지를 표시하지 않는다', () => {
+      const note = makeNote({ id: '1', tags: [] });
+      setupMock([note]);
+      render(<NoteEditor selectedNoteId="1" isCreating={false} onDone={vi.fn()} />);
+      const tagInput = screen.getByPlaceholderText('태그 입력');
+      fireEvent.change(tagInput, { target: { value: 'a'.repeat(21) } });
+      fireEvent.keyDown(tagInput, { key: 'Enter' });
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    });
+  });
+
+  describe('중복 방지', () => {
+    // [정상] should add tag when existing tags contain similar value with different case
+    it('기존 태그와 다른 값이면 정상 추가된다', () => {
+      const note = makeNote({ id: '1', tags: ['TypeScript'] });
+      setupMock([note]);
+      render(<NoteEditor selectedNoteId="1" isCreating={false} onDone={vi.fn()} />);
+      const tagInput = screen.getByPlaceholderText('태그 입력');
+      fireEvent.change(tagInput, { target: { value: 'javascript' } });
+      fireEvent.keyDown(tagInput, { key: 'Enter' });
+      expect(screen.getByText('javascript')).toBeInTheDocument();
+    });
+
+    // [예외] should not add tag when exact same tag already exists
+    it('동일한 태그가 이미 있으면 추가되지 않는다', () => {
+      const note = makeNote({ id: '1', tags: ['react'] });
+      setupMock([note]);
+      render(<NoteEditor selectedNoteId="1" isCreating={false} onDone={vi.fn()} />);
+      const tagInput = screen.getByPlaceholderText('태그 입력');
+      fireEvent.change(tagInput, { target: { value: 'react' } });
+      fireEvent.keyDown(tagInput, { key: 'Enter' });
+      expect(screen.getAllByRole('listitem')).toHaveLength(1);
+    });
+
+    // [예외] should not add tag when same tag exists with different case
+    it('대소문자만 다른 중복 태그는 추가되지 않는다 (e.g. "TypeScript" vs "typescript")', () => {
+      const note = makeNote({ id: '1', tags: ['TypeScript'] });
+      setupMock([note]);
+      render(<NoteEditor selectedNoteId="1" isCreating={false} onDone={vi.fn()} />);
+      const tagInput = screen.getByPlaceholderText('태그 입력');
+      fireEvent.change(tagInput, { target: { value: 'typescript' } });
+      fireEvent.keyDown(tagInput, { key: 'Enter' });
+      expect(screen.getAllByRole('listitem')).toHaveLength(1);
+    });
+
+    // [예외] should not display error message when duplicate tag is entered
+    it('중복 태그 입력 시 에러 메시지를 표시하지 않는다', () => {
+      const note = makeNote({ id: '1', tags: ['react'] });
+      setupMock([note]);
+      render(<NoteEditor selectedNoteId="1" isCreating={false} onDone={vi.fn()} />);
+      const tagInput = screen.getByPlaceholderText('태그 입력');
+      fireEvent.change(tagInput, { target: { value: 'react' } });
+      fireEvent.keyDown(tagInput, { key: 'Enter' });
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    });
+  });
+});
+
+// ──────────────────────────────────────────
 // handleSave
 // ──────────────────────────────────────────
 describe('handleSave', () => {
