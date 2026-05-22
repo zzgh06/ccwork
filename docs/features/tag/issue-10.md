@@ -27,17 +27,17 @@
 
 ### 정상
 
-- [정상] NoteItem — should render only valid chips when tags contains both valid and empty strings
+- [x] [정상] NoteItem — should render only valid chips when tags contains both valid and empty strings
 
 ### 경계
 
-- [경계] NoteItem — should not render chip for empty string tag
-- [경계] NoteItem — should not render chip for whitespace-only tag
-- [경계] NoteItem — should not render tag area when all tags are empty or whitespace
+- [x] [경계] NoteItem — should not render chip for empty string tag
+- [x] [경계] NoteItem — should not render chip for whitespace-only tag
+- [x] [경계] NoteItem — should not render tag area when all tags are empty or whitespace
 
 ### 예외
 
-- [예외] NoteItem — should render remaining valid chips when tags is ["react", "", "study"]
+- [x] [예외] NoteItem — should render remaining valid chips when tags is ["react", "", "study"]
 
 ## AC 커버리지
 
