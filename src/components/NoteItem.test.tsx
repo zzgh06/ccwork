@@ -56,6 +56,38 @@ describe('NoteItem', () => {
     });
   });
 
+  describe('중복 태그 처리 (Issue #9)', () => {
+    // [정상] should render only unique chips when tags contain exact duplicates
+    it('중복 태그가 있으면 고유 태그 칩만 렌더링한다', () => {
+      const note = makeNote({ tags: ['react', 'typescript', 'react'] });
+      render(<NoteItem note={note} {...defaultProps} />);
+      expect(screen.getAllByRole('listitem')).toHaveLength(2);
+    });
+
+    // [경계] should render 1 chip when tags is ["react", "react"]
+    it('tags가 ["react", "react"]이면 칩 1개만 렌더링한다', () => {
+      const note = makeNote({ tags: ['react', 'react'] });
+      render(<NoteItem note={note} {...defaultProps} />);
+      expect(screen.getAllByRole('listitem')).toHaveLength(1);
+    });
+
+    // [경계] should render 2 chips when tags is ["react", "React"] (Set은 case-sensitive)
+    it('대소문자만 다른 태그는 중복으로 처리하지 않아 2개를 렌더링한다', () => {
+      const note = makeNote({ tags: ['react', 'React'] });
+      render(<NoteItem note={note} {...defaultProps} />);
+      expect(screen.getAllByRole('listitem')).toHaveLength(2);
+    });
+
+    // [예외] should not emit React key warning when tags contain duplicates
+    it('중복 태그가 있어도 React key 경고를 발생시키지 않는다', () => {
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const note = makeNote({ tags: ['react', 'react'] });
+      render(<NoteItem note={note} {...defaultProps} />);
+      expect(consoleSpy).not.toHaveBeenCalled();
+      consoleSpy.mockRestore();
+    });
+  });
+
   describe('저장 후 태그 반영', () => {
     // [정상] NoteItem — should display updated tags after save
     it('저장 후 변경된 tags를 카드에 반영한다', () => {
