@@ -86,6 +86,20 @@ describe('NoteItem', () => {
       expect(consoleSpy).not.toHaveBeenCalled();
       consoleSpy.mockRestore();
     });
+
+    // ac-verifier 갭 보완 — 후행 공백 포함 태그는 Set 기준 다른 값으로 2개 렌더링
+    it('후행 공백이 다른 태그는 중복으로 처리하지 않아 2개를 렌더링한다', () => {
+      const note = makeNote({ tags: ['react', 'react '] });
+      render(<NoteItem note={note} {...defaultProps} />);
+      expect(screen.getAllByRole('listitem')).toHaveLength(2);
+    });
+
+    // ac-verifier 갭 보완 — 3개 이상 동일 태그 시 칩 1개로 dedup
+    it('태그가 3개 모두 동일하면 칩 1개만 렌더링한다', () => {
+      const note = makeNote({ tags: ['react', 'react', 'react'] });
+      render(<NoteItem note={note} {...defaultProps} />);
+      expect(screen.getAllByRole('listitem')).toHaveLength(1);
+    });
   });
 
   describe('저장 후 태그 반영', () => {

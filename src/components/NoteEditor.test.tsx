@@ -305,6 +305,17 @@ describe('handleAddTag — 유효성 검사', () => {
       fireEvent.keyDown(tagInput, { key: 'Enter' });
       expect(screen.queryByRole('alert')).not.toBeInTheDocument();
     });
+
+    // [예외] ac-verifier 갭 보완 — 비-alert 에러 텍스트 미표시 확인
+    it('21자 태그 입력 시 에러성 텍스트를 표시하지 않는다', () => {
+      const note = makeNote({ id: '1', tags: [] });
+      setupMock([note]);
+      render(<NoteEditor selectedNoteId="1" isCreating={false} onDone={vi.fn()} />);
+      const tagInput = screen.getByPlaceholderText('태그 입력');
+      fireEvent.change(tagInput, { target: { value: 'a'.repeat(21) } });
+      fireEvent.keyDown(tagInput, { key: 'Enter' });
+      expect(screen.queryByText(/오류|에러|초과|error/i)).not.toBeInTheDocument();
+    });
   });
 
   describe('중복 방지', () => {
@@ -350,6 +361,17 @@ describe('handleAddTag — 유효성 검사', () => {
       fireEvent.change(tagInput, { target: { value: 'react' } });
       fireEvent.keyDown(tagInput, { key: 'Enter' });
       expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    });
+
+    // [예외] ac-verifier 갭 보완 — 비-alert 에러 텍스트 미표시 확인
+    it('중복 태그 입력 시 에러성 텍스트를 표시하지 않는다', () => {
+      const note = makeNote({ id: '1', tags: ['react'] });
+      setupMock([note]);
+      render(<NoteEditor selectedNoteId="1" isCreating={false} onDone={vi.fn()} />);
+      const tagInput = screen.getByPlaceholderText('태그 입력');
+      fireEvent.change(tagInput, { target: { value: 'react' } });
+      fireEvent.keyDown(tagInput, { key: 'Enter' });
+      expect(screen.queryByText(/이미|중복|duplicate|error/i)).not.toBeInTheDocument();
     });
   });
 });
