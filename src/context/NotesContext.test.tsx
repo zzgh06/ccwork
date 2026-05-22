@@ -41,7 +41,6 @@ describe('NotesContext — createNote', () => {
     const { result } = renderHook(() => useNotes(), { wrapper });
 
     await act(async () => {
-      // @ts-expect-error — 현재 시그니처는 tags 미포함, 실패 유도
       await result.current.createNote('제목', '내용', ['react']);
     });
 
@@ -57,7 +56,6 @@ describe('NotesContext — createNote', () => {
     const { result } = renderHook(() => useNotes(), { wrapper });
 
     await act(async () => {
-      // @ts-expect-error — 현재 시그니처는 tags 미포함, 실패 유도
       await result.current.createNote('제목', '내용', ['react', 'typescript']);
     });
 
