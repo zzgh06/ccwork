@@ -102,6 +102,45 @@ describe('NoteItem', () => {
     });
   });
 
+  describe('빈 태그 필터링 (Issue #10)', () => {
+    // [정상] should render only valid chips when tags contains both valid and empty strings
+    it('유효 태그와 빈 문자열이 혼재할 때 유효 태그 칩만 렌더링한다', () => {
+      const note = makeNote({ tags: ['react', '', 'study'] });
+      render(<NoteItem note={note} {...defaultProps} />);
+      expect(screen.getAllByRole('listitem')).toHaveLength(2);
+    });
+
+    // [경계] should not render chip for empty string tag
+    it('빈 문자열 태그는 칩을 렌더링하지 않는다', () => {
+      const note = makeNote({ tags: [''] });
+      render(<NoteItem note={note} {...defaultProps} />);
+      expect(screen.queryByRole('listitem')).not.toBeInTheDocument();
+    });
+
+    // [경계] should not render chip for whitespace-only tag
+    it('공백만인 태그는 칩을 렌더링하지 않는다', () => {
+      const note = makeNote({ tags: [' '] });
+      render(<NoteItem note={note} {...defaultProps} />);
+      expect(screen.queryByRole('listitem')).not.toBeInTheDocument();
+    });
+
+    // [경계] should not render tag area when all tags are empty or whitespace
+    it('모든 태그가 빈 문자열·공백이면 태그 영역을 렌더링하지 않는다', () => {
+      const note = makeNote({ tags: ['', ' ', '  '] });
+      render(<NoteItem note={note} {...defaultProps} />);
+      expect(screen.queryByRole('list')).not.toBeInTheDocument();
+    });
+
+    // [예외] should render remaining valid chips when tags is ["react", "", "study"]
+    it('tags가 ["react", "", "study"]이면 유효 태그 2개를 렌더링한다', () => {
+      const note = makeNote({ tags: ['react', '', 'study'] });
+      render(<NoteItem note={note} {...defaultProps} />);
+      expect(screen.getByText('react')).toBeInTheDocument();
+      expect(screen.getByText('study')).toBeInTheDocument();
+      expect(screen.getAllByRole('listitem')).toHaveLength(2);
+    });
+  });
+
   describe('저장 후 태그 반영', () => {
     // [정상] NoteItem — should display updated tags after save
     it('저장 후 변경된 tags를 카드에 반영한다', () => {
