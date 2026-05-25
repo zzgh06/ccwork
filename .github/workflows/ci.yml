@@ -24,7 +24,7 @@ jobs:
           HUSKY: 0
 
       - name: Lint
-        run: npm run lint
+        run: npx eslint .
 
       - name: 타입 체크
         run: npx tsc --noEmit
@@ -34,3 +34,17 @@ jobs:
 
       - name: 테스트
         run: npm test
+
+      - name: Playwright 브라우저 설치
+        run: npx playwright install --with-deps chromium
+
+      - name: E2E 테스트
+        run: npm run test:e2e
+
+      - name: E2E 리포트 업로드
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
