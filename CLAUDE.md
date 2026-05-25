@@ -78,30 +78,34 @@ App (selectedNoteId, isCreating 상태 소유)
 ## 구현 패턴
 
 ### 컴포넌트 패턴
+
 - **Named export** 사용 (`export function NoteItem`) — App.tsx만 예외적으로 default export
 - Props 타입은 파일 상단에 `interface XxxProps`로 선언
 - 로딩/에러/빈 상태는 early return으로 처리 후 정상 렌더를 마지막에 배치 (`NoteList.tsx` 참고)
 - 이벤트 버블링 차단이 필요한 경우 `e.stopPropagation()` 인라인 처리 (`NoteItem` 삭제 버튼)
 
 ### 상태관리 방식
+
 상태를 3단계로 분리해서 관리:
 
-| 레이어 | 상태 | 위치 |
-|--------|------|------|
-| 서버 데이터 | `notes`, `loading`, `error` | `NotesContext` |
-| UI 선택 상태 | `selectedNoteId`, `isCreating` | `App.tsx` |
-| 폼 입력 | `title`, `content`, `saving` | `NoteEditor` 로컬 |
+| 레이어       | 상태                           | 위치              |
+| ------------ | ------------------------------ | ----------------- |
+| 서버 데이터  | `notes`, `loading`, `error`    | `NotesContext`    |
+| UI 선택 상태 | `selectedNoteId`, `isCreating` | `App.tsx`         |
+| 폼 입력      | `title`, `content`, `saving`   | `NoteEditor` 로컬 |
 
 - Context는 `XxxProvider` + `useXxx()` 훅 쌍으로 구성, 훅 내부에서 null guard로 Provider 밖 사용 감지
 - API 응답 결과로 상태 갱신 (낙관적 업데이트 없음)
 
 ### API 호출 패턴
+
 - `src/api/notes.ts`는 side effect 없는 순수 async 함수만 포함
 - 모든 함수는 `res.ok` 체크 후 실패 시 `throw new Error(...)` 처리
 - `createdAt` / `updatedAt` 타임스탬프는 API 함수 내에서 `new Date().toISOString()`으로 생성 (서버 미생성)
 - Context에서 `import * as api from '../api/notes'` namespace import로 호출
 
 ### 네이밍 패턴
+
 - 컴포넌트 내부 이벤트 핸들러: `handleXxx` (`handleSave`, `handleSelectNote`)
 - Props로 전달하는 콜백: `onXxx` (`onSelect`, `onDelete`, `onDone`)
 - Context 메서드 및 API 함수: `fetch/create/update/delete` 동사로 통일
@@ -110,6 +114,73 @@ App (selectedNoteId, isCreating 상태 소유)
 
 1. **에러 메시지 언어 불일치**: API 에러는 영어(`'Failed to fetch notes'`), 컴포넌트 `console.error`는 해당 에러 객체를 그대로 출력
 2. **eslint-disable 억제**: `NoteEditor.tsx:27`의 `useEffect` deps 배열에 `selectedNote`가 누락된 채 `eslint-disable-line`으로 경고를 억제 중 — 노트 전환 시 폼이 동기화되지 않을 수 있는 잠재적 버그
+
+## TDD 이슈 사이클 워크플로우
+
+새 이슈 작업 시 반드시 아래 순서를 따른다. **각 단계는 인간 승인 게이트가 있으므로 자동으로 다음 단계로 넘어가지 말 것.**
+
+| #   | 명령                                                             | 역할                                      | 도구   |
+| --- | ---------------------------------------------------------------- | ----------------------------------------- | ------ |
+| 1   | `/test-scenarios N`                                              | 시그니처 확정 + 시나리오 도출             | skill  |
+| 2   | `/tdd-red N`                                                     | 실패 테스트 작성                          | skill  |
+| 3   | `/tdd-green N`                                                   | 최소 구현, 전체 테스트 통과               | skill  |
+| 4   | `@ac-verifier N`                                                 | AC 충족 독립 검증 (테스트 통과 ≠ AC 충족) | agent  |
+| 5   | `/tdd-refactor N`                                                | 구조 개선 (깨지면 즉시 롤백)              | skill  |
+| 6   | `/security-review N`                                             | 타입·보안 점검                            | skill  |
+| 7   | commit → PR `--base feature/<spec>` → squash merge → 이슈 클로즈 | —                                         | git/gh |
+
+### 흐름 제어 규칙
+
+- **Claude는 각 단계 완료 후 다음 단계를 제안만 한다** — 사용자가 명시적으로 진행을 요청할 때까지 기다린다.
+- 단계 완료 시 제안 형식: `"✓ [단계명] 완료. 다음: /tdd-red N 을 실행할까요?"`
+- 이슈 의존성이 있으면 선행 이슈가 머지된 feature 브랜치에서 분기한다.
+- ac-verifier가 AC 미충족을 보고하면 `/tdd-green N`으로 돌아간다.
+- `/security-review` 에서 CRITICAL 또는 HIGH 항목이 나오면 커밋 전 반드시 수정한다.
+
+## 커밋 규칙
+
+`commitlint` + husky `commit-msg` 훅으로 커밋 메시지 형식을 강제한다. 설정 파일: `commitlint.config.js`
+
+### 허용 타입
+
+`feat` `fix` `docs` `style` `refactor` `test` `chore` `design` `comment` `remove` `rename`
+
+### 제약 조건
+
+- 제목: `타입: 내용` 형식 필수, 최대 50자
+- 본문: 최소 2줄 이상 필수
+
+### 예시
+
+```
+feat: 로그인 기능 추가
+
+- JWT 토큰 기반 인증 구현
+- 로그인 폼 유효성 검사 추가
+```
+
+## 디자인 시스템
+
+스타일 관련 작업(컴포넌트 className 수정, CSS 편집, UI 구현 등)에는 반드시 `design-system` 스킬을 먼저 호출하여 규칙을 로드한 뒤 진행한다.
+
+상세 스펙: `docs/design-system/`
+
+### 핵심 규칙 (항상 적용)
+
+- **border로 영역 분리 금지** — 배경색 전환으로만 구분한다
+- **텍스트에 `#000000` / `text-black` 금지** — `#2b3437` (on_surface) 사용
+- **`bg-white` 등 Tailwind 기본 색상 클래스 금지** — 디자인 토큰 색상값 사용
+- **`#0053dc` (tertiary)는 CTA에만** — 장식 목적 사용 금지
+- **기본 box-shadow 금지** — Ambient Shadow(blur 24~40px, opacity 6%) 또는 Tonal Layering 사용
+
+### 참조 파일
+
+| 파일                                | 참조 시점                 |
+| ----------------------------------- | ------------------------- |
+| `@docs/design-system/tokens.md`     | 색상·간격 토큰 확인       |
+| `@docs/design-system/typography.md` | 텍스트·폰트 스타일링      |
+| `@docs/design-system/components.md` | 버튼·카드·Input·Chip 패턴 |
+| `@docs/design-system/rules.md`      | Do/Don't 전체 검수        |
 
 ## 기술 스택
 
