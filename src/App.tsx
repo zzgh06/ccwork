@@ -8,6 +8,7 @@ function App() {
   const [selectedNoteId, setSelectedNoteId] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [searchQuery, setSearchQuery] = useState<string>('');
 
   const handleSelectNote = (id: string) => {
     setSelectedNoteId(id);
@@ -40,6 +41,8 @@ function App() {
             onSelect={handleSelectNote}
             selectedTags={selectedTags}
             onTagToggle={handleTagToggle}
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
           />
         }
         main={
