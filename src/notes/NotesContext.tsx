@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Note } from '../types/note';
-import * as api from '../api/notes';
+import { Note } from './types';
+import * as api from './api';
 
 interface NotesContextType {
   notes: Note[];

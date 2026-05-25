@@ -1,4 +1,4 @@
-import type { Note } from './note';
+import type { Note } from './types';
 import { expectTypeOf } from 'vitest';
 
 describe('Note 타입', () => {

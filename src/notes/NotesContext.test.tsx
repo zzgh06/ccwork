@@ -1,10 +1,10 @@
 import { renderHook, act } from '@testing-library/react';
 import { ReactNode } from 'react';
 import { NotesProvider, useNotes } from './NotesContext';
-import * as api from '../api/notes';
-import type { Note } from '../types/note';
+import * as api from './api';
+import type { Note } from './types';
 
-vi.mock('../api/notes');
+vi.mock('./api');
 
 const makeNote = (overrides: Partial<Note> = {}): Note => ({
   id: '1',

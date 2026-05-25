@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { NoteItem } from './NoteItem';
-import type { Note } from '../types/note';
+import type { Note } from './types';
 
 // Red phase: Note 타입에 tags가 없으므로 as unknown as Note 캐스팅 사용
 const makeNote = (overrides: Record<string, unknown> = {}): Note =>
