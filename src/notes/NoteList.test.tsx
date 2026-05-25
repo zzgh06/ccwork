@@ -29,12 +29,14 @@ const defaultContext = {
   updateNote: vi.fn(),
 };
 
-// NoteListProps는 아직 selectedTags·onTagToggle를 모름 — Green 단계에서 추가될 예정
+// NoteListProps — searchQuery·onSearchChange는 Issue #18에서 추가될 예정
 type FutureNoteListProps = {
   selectedNoteId: string | null;
   onSelect: (id: string) => void;
   selectedTags: string[];
   onTagToggle: (tag: string) => void;
+  searchQuery: string;
+  onSearchChange: (query: string) => void;
 };
 
 const makeProps = (overrides: Partial<FutureNoteListProps> = {}): FutureNoteListProps => ({
@@ -42,6 +44,8 @@ const makeProps = (overrides: Partial<FutureNoteListProps> = {}): FutureNoteList
   onSelect: vi.fn(),
   selectedTags: [],
   onTagToggle: vi.fn(),
+  searchQuery: '',
+  onSearchChange: vi.fn(),
   ...overrides,
 });
 
@@ -200,6 +204,136 @@ describe('NoteList — 태그 필터 (Issue #15)', () => {
       renderNoteList();
 
       expect(screen.queryByTestId('tag-filter')).not.toBeInTheDocument();
+    });
+  });
+});
+
+describe('NoteList — 검색 필터 (Issue #18)', () => {
+  describe('정상', () => {
+    it('searchQuery가 제목 substring과 일치하는 노트만 표시한다', () => {
+      mockUseNotes.mockReturnValue({
+        ...defaultContext,
+        notes: [
+          makeNote({ id: '1', title: 'React 입문', content: '내용A', tags: [] }),
+          makeNote({ id: '2', title: 'Vue 실습', content: '내용B', tags: [] }),
+        ],
+      });
+      renderNoteList(makeProps({ searchQuery: 'React' }));
+
+      expect(screen.getByText('React 입문')).toBeInTheDocument();
+      expect(screen.queryByText('Vue 실습')).not.toBeInTheDocument();
+    });
+
+    it('searchQuery가 내용 substring과 일치하는 노트만 표시한다', () => {
+      mockUseNotes.mockReturnValue({
+        ...defaultContext,
+        notes: [
+          makeNote({ id: '1', title: '노트1', content: 'TypeScript 학습 내용', tags: [] }),
+          makeNote({ id: '2', title: '노트2', content: '다른 내용', tags: [] }),
+        ],
+      });
+      renderNoteList(makeProps({ searchQuery: 'TypeScript' }));
+
+      expect(screen.getByText('노트1')).toBeInTheDocument();
+      expect(screen.queryByText('노트2')).not.toBeInTheDocument();
+    });
+
+    it('searchQuery가 빈 문자열이면 전체 노트를 표시한다', () => {
+      mockUseNotes.mockReturnValue({
+        ...defaultContext,
+        notes: [
+          makeNote({ id: '1', title: '노트1', content: '내용1', tags: [] }),
+          makeNote({ id: '2', title: '노트2', content: '내용2', tags: [] }),
+        ],
+      });
+      renderNoteList(makeProps({ searchQuery: '' }));
+
+      expect(screen.getByText('노트1')).toBeInTheDocument();
+      expect(screen.getByText('노트2')).toBeInTheDocument();
+    });
+
+    it('searchQuery와 selectedTags가 모두 활성화되면 AND 조건으로 필터링한다', () => {
+      mockUseNotes.mockReturnValue({
+        ...defaultContext,
+        notes: [
+          makeNote({ id: '1', title: 'React 노트', content: '내용', tags: ['react'] }),
+          makeNote({ id: '2', title: 'Vue 노트', content: '내용', tags: ['vue'] }),
+          makeNote({ id: '3', title: 'React 심화', content: '내용', tags: ['react'] }),
+        ],
+      });
+      renderNoteList(makeProps({ searchQuery: '심화', selectedTags: ['react'] }));
+
+      expect(screen.getByText('React 심화')).toBeInTheDocument();
+      expect(screen.queryByText('React 노트')).not.toBeInTheDocument();
+      expect(screen.queryByText('Vue 노트')).not.toBeInTheDocument();
+    });
+  });
+
+  describe('경계', () => {
+    it('searchQuery가 공백만 있으면 trim() 후 빈 문자열로 처리해 전체 노트를 표시한다', () => {
+      mockUseNotes.mockReturnValue({
+        ...defaultContext,
+        notes: [
+          makeNote({ id: '1', title: '노트1', content: '내용1', tags: [] }),
+          makeNote({ id: '2', title: '노트2', content: '내용2', tags: [] }),
+        ],
+      });
+      renderNoteList(makeProps({ searchQuery: '   ' }));
+
+      expect(screen.getByText('노트1')).toBeInTheDocument();
+      expect(screen.getByText('노트2')).toBeInTheDocument();
+    });
+
+    it('searchQuery는 대소문자를 구분하지 않고 일치 여부를 판단한다', () => {
+      mockUseNotes.mockReturnValue({
+        ...defaultContext,
+        notes: [
+          makeNote({ id: '1', title: 'react 입문', content: '내용', tags: [] }),
+          makeNote({ id: '2', title: 'Vue 실습', content: '내용', tags: [] }),
+        ],
+      });
+      renderNoteList(makeProps({ searchQuery: 'REACT' }));
+
+      expect(screen.getByText('react 입문')).toBeInTheDocument();
+      expect(screen.queryByText('Vue 실습')).not.toBeInTheDocument();
+    });
+
+    it('초기 렌더 시 searchQuery가 빈 문자열이면 전체 노트를 표시한다', () => {
+      mockUseNotes.mockReturnValue({
+        ...defaultContext,
+        notes: [
+          makeNote({ id: '1', title: '노트A', content: '내용A', tags: [] }),
+          makeNote({ id: '2', title: '노트B', content: '내용B', tags: [] }),
+        ],
+      });
+      renderNoteList(makeProps({ searchQuery: '' }));
+
+      expect(screen.getByText('노트A')).toBeInTheDocument();
+      expect(screen.getByText('노트B')).toBeInTheDocument();
+    });
+  });
+
+  describe('예외', () => {
+    it('검색 결과가 없으면 "\'{검색어}\'에 대한 검색 결과가 없습니다" 메시지를 표시한다', () => {
+      mockUseNotes.mockReturnValue({
+        ...defaultContext,
+        notes: [makeNote({ id: '1', title: '노트1', content: '내용1', tags: [] })],
+      });
+      renderNoteList(makeProps({ searchQuery: '존재하지않는키워드' }));
+
+      expect(
+        screen.getByText("'존재하지않는키워드'에 대한 검색 결과가 없습니다"),
+      ).toBeInTheDocument();
+    });
+
+    it('selectedTags가 비어있어도 searchQuery가 일치하지 않으면 결과 없음 메시지를 표시한다', () => {
+      mockUseNotes.mockReturnValue({
+        ...defaultContext,
+        notes: [makeNote({ id: '1', title: '노트1', content: '내용1', tags: [] })],
+      });
+      renderNoteList(makeProps({ searchQuery: 'zzz없음', selectedTags: [] }));
+
+      expect(screen.getByText("'zzz없음'에 대한 검색 결과가 없습니다")).toBeInTheDocument();
     });
   });
 });
