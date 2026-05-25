@@ -1,4 +1,4 @@
-import { Note } from '../types/note';
+import { Note } from './types';
 
 const API_URL = 'http://localhost:3001';
 

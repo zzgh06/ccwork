@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNotes } from '../context/NotesContext';
+import { useNotes } from './NotesContext';
 import { TagInput } from './TagInput';
 
 interface NoteEditorProps {
