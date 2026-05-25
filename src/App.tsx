@@ -1,12 +1,13 @@
 import { useState } from 'react';
-import { NotesProvider } from './context/NotesContext';
-import { Layout } from './components/Layout';
-import { NoteList } from './components/NoteList';
-import { NoteEditor } from './components/NoteEditor';
+import { NotesProvider } from './notes/NotesContext';
+import { Layout } from './shared/Layout';
+import { NoteList } from './notes/NoteList';
+import { NoteEditor } from './notes/NoteEditor';
 
 function App() {
   const [selectedNoteId, setSelectedNoteId] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
   const handleSelectNote = (id: string) => {
     setSelectedNoteId(id);
@@ -23,17 +24,26 @@ function App() {
     // 저장 후 선택 상태는 유지
   };
 
+  const handleTagToggle = (tag: string) => {
+    setSelectedTags((prev) =>
+      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag],
+    );
+  };
+
   return (
     <NotesProvider>
       <Layout
         onNewNote={handleNewNote}
-        sidebar={<NoteList selectedNoteId={selectedNoteId} onSelect={handleSelectNote} />}
-        main={
-          <NoteEditor
+        sidebar={
+          <NoteList
             selectedNoteId={selectedNoteId}
-            isCreating={isCreating}
-            onDone={handleDone}
+            onSelect={handleSelectNote}
+            selectedTags={selectedTags}
+            onTagToggle={handleTagToggle}
           />
+        }
+        main={
+          <NoteEditor selectedNoteId={selectedNoteId} isCreating={isCreating} onDone={handleDone} />
         }
       />
     </NotesProvider>
